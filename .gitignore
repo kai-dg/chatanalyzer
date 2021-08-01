@@ -1,0 +1,7 @@
+*/__pycache__/*
+**/__pycache__/
+macros/*.txt
+venv/
+viplist.json
+friendslist.json
+.vim/

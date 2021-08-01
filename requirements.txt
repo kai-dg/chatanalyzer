@@ -1,0 +1,14 @@
+certifi==2021.5.30
+charset-normalizer==2.0.4
+chat-downloader==0.1.7
+colorama==0.4.4
+colorlog==5.0.1
+docstring-parser==0.10
+idna==3.2
+isodate==0.6.0
+pypiwin32==223
+pywin32==301
+requests==2.26.0
+six==1.16.0
+urllib3==1.26.6
+websocket-client==1.1.0
