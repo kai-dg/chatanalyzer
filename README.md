@@ -1,6 +1,6 @@
 # Chat Analyzer
 
-Windows support only.
+Livestream chat analyzer. Windows support only.
 
 ---
 
