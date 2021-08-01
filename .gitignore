@@ -2,6 +2,5 @@
 **/__pycache__/
 macros/*.txt
 venv/
-viplist.json
-friendslist.json
+.settings/*
 .vim/

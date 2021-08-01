@@ -11,44 +11,16 @@ from win32com.client import Dispatch
 from chat_downloader import ChatDownloader
 from chat_downloader import errors as c_errors
 from datetime import datetime
-from sys import argv, exit
-from os import path
+from sys import argv
+from os import path, mkdir
+from chatsettings import AnalSettings
 
-class TtsService:
-    speak = Dispatch("SAPI.SpVoice").Speak
+DOT_FOLDER = ".settings"
 
-    def tts_message(self, servs:dict, message):
-        """TTS Service function"""
-        author_id = message.get("author").get("id")
-        author = message.get("author").get("name")
-        if "flag_onlyfriends" in servs:
-            author = serv.get("flag_onlyfriends")
-        mes = message.get("message")
-        self.speak(f"{author} says {mes}")
-
-class VipSubService(TtsService):
-    vip_list = None
-    friends_list = None
-    _json_files = {
-        "viplist.json": "vip_list",
-        "friendslist.json": "friends_list"
-    }
-
+class VipSubService:
     def __init__(self):
-        TtsService.__init__(self)
-        self._set_json_files()
         self._set_vip_list()
-
-    def _set_json_files(self):
-        for jfile, jattr in self._json_files.items():
-            if path.exists(jfile):
-                with open(jfile, "r") as f:
-                    setattr(self, jattr, json.load(f))
-            else:
-                with open(jfile, "w") as f:
-                    f.write("{}")
-                    setattr(self, jattr, {})
-
+        
     def _set_vip_list(self):
         for a_id, nickname in self.vip_list.items():
             if a_id in self.friends_list:
@@ -59,20 +31,45 @@ class VipSubService(TtsService):
         vip_author = self.vip_list.get(author, None)
         return vip_author if vip_author else author
 
-class ChatAnalyzer(VipSubService):
+class TtsService(VipSubService):
+    speak = Dispatch("SAPI.SpVoice").Speak
+
+    def __init__(self):
+        VipSubService.__init__(self)
+
+    def tts_message(self, servs:dict, message):
+        """TTS Service function"""
+        author_id = message.get("author").get("id")
+        author = message.get("author").get("name")
+        if "flag_onlyfriends" in servs:
+            author = serv.get("flag_onlyfriends")
+        mes = message.get("message")
+        self.speak(f"{author} says {mes}")
+
+class ChatAnalyzer(TtsService):
     """ChatAnal with added services.
     Each service function needs to take in services + message.
     """
     chat = None
     now = datetime.now().timestamp()
+    _json_files = {
+        "viplist.json": "vip_list",
+        "friendslist.json": "friends_list",
+        "flags.json": "flags"
+    }
+    # FLAGS
+    flags = None
+    # SERVICES
     services = {}
-    flag_onlyfriends = False
-    flag_tts = True
+    vip_list = None
+    friends_list = None
 
     def __init__(self, url):
-        VipSubService.__init__(self)
         self._init_services()
+        self._set_json_files()
         self.chat = self._get_chat(url)
+        TtsService.__init__(self)
+
 
     def _init_services(self):
         self.services = {
@@ -81,6 +78,21 @@ class ChatAnalyzer(VipSubService):
                 "flag_onlyfriends": self.vip_check_if_friend
             },
         }
+
+    def _set_json_files(self):
+        if not path.exists(DOT_FOLDER):
+            mkdir(DOT_FOLDER)
+        for jfile, jattr in self._json_files.items():
+            jpath = path.join(DOT_FOLDER, jfile)
+            if path.exists(jpath):
+                with open(jpath, "r") as f:
+                    setattr(self, jattr, json.load(f))
+            else:
+                with open(jpath, "w") as f:
+                    f.write("{}")
+                    setattr(self, jattr, {})
+                if jattr == "flags":
+                    AnalSettings.add_flags_template(jpath)
 
     def _get_chat(self, url):
         try:
