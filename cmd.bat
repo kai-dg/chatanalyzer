@@ -1,7 +1,7 @@
 @echo off
 IF EXIST "venv\" (
   cd %CD%
-  start cmd.exe /k "env\scripts\activate.bat"^
+  start cmd.exe /k "venv\scripts\activate.bat"^
     "&&echo Chat Analyzer: python chatanal.py [livestream_url]"
 ) ELSE (
   cd %CD%
