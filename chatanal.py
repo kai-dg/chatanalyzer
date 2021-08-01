@@ -7,6 +7,7 @@ viplist.json:
 """
 import json
 import errors
+import copy
 from win32com.client import Dispatch
 from chat_downloader import ChatDownloader
 from chat_downloader import errors as c_errors
@@ -26,9 +27,9 @@ class VipSubService:
             if a_id in self.friends_list:
                 self.friends_list[a_id] = nickname
 
-    def vip_check_if_friend(self, author) -> str:
+    def vip_check_if_friend(self, author, author_id) -> str:
         """VIP Sub Service function"""
-        vip_author = self.vip_list.get(author, None)
+        vip_author = self.vip_list.get(author_id, None)
         return vip_author if vip_author else author
 
 class TtsService(VipSubService):
@@ -42,7 +43,7 @@ class TtsService(VipSubService):
         author_id = message.get("author").get("id")
         author = message.get("author").get("name")
         if "flag_onlyfriends" in servs:
-            author = serv.get("flag_onlyfriends")
+            author = servs.get("flag_onlyfriends")(author, author_id)
         mes = message.get("message")
         self.speak(f"{author} says {mes}")
 
@@ -65,11 +66,10 @@ class ChatAnalyzer(TtsService):
     friends_list = None
 
     def __init__(self, url):
-        self._init_services()
         self._set_json_files()
         self.chat = self._get_chat(url)
         TtsService.__init__(self)
-
+        self._init_services()
 
     def _init_services(self):
         self.services = {
@@ -97,6 +97,7 @@ class ChatAnalyzer(TtsService):
     def _get_chat(self, url):
         try:
             chat = ChatDownloader().get_chat(url)
+            return chat
         except c_errors.SiteNotSupported:
             raise errors.ChatAnalyzerUrlError()
 
@@ -107,14 +108,13 @@ class ChatAnalyzer(TtsService):
         print(f"{t} | {mes['author']['name']} ({mes['author']['id']}): {mes['message']}")
 
     def _get_services(self) -> dict:
-        servs = self.services.copy()
+        servs = {}
         for s_attr, func_set in self.services.items():
-            if getattr(self, s_attr) == True:
-                for ss_attr in func_set.item():
-                    if getattr(self, ss_attr) == False:
-                        del servs[s_attr][ss_attr]
-            else:
-                del servs[s_attr]
+            if self.flags.get(s_attr, None) == True:
+                servs[s_attr] = {"main": func_set["main"]}
+                for ss_attr, func in func_set.items():
+                    if self.flags.get(ss_attr) == True:
+                        servs[s_attr][ss_attr] = func
         return servs
 
     def _run_service(self, serv, message):
@@ -128,9 +128,10 @@ class ChatAnalyzer(TtsService):
         for message in self.chat:
             if message.get("timestamp")/1000000 > self.now:
                 self._print_message(message)
-                for s in servs:
-                    self._run_service(s, message)
+                for name, funcs in servs.items():
+                    self._run_service(funcs, message)
 
 if __name__ == "__main__":
     url = argv[1]
     chat = ChatAnalyzer(url)
+    chat.run()

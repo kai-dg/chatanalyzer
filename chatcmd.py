@@ -18,7 +18,7 @@ class ChatAnalyzerCmd(Cmd):
         print("Exiting")
         return True
     def do_start(self, inp):
-        command = ["cmd", "/c", "venv\\scripts\\activate.bat", "&&", "python", "chatanal.py", "random"]
+        command = ["cmd", "/c", "venv\\scripts\\activate.bat", "&&", "python", "chatanal.py", inp]
         self.PROC = subprocess.Popen(
             command,
             creationflags=subprocess.CREATE_NEW_CONSOLE,
