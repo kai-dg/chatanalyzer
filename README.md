@@ -12,16 +12,24 @@ Livestream chat analyzer. Windows support only.
 
 ## Usage
 
-`python chatanal.py [livestream_url]`
+`ChatAnalyzer > start [url]`
+
+`ChatAnalyzer > end`
+
+`ChatAnalyzer > edit [name]`
 
 ---
 
 ## Features
 
-1. OnlyFriends
+1. TTS OnlyFriends
 
-  - Have TTS only speak when friends chat
+  - Have TTS when specific user ids show up in chat
 
-2. VIP List
+2. TTS Blacklist
+
+  - Have TTS blacklist specific user ids
+
+2. (TTS) VIP List
 
   - Rename selected users to change their name when TTS says their chat

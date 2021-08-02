@@ -34,8 +34,8 @@ def check_edit_args(inp) -> list:
 
 class ChatAnalyzerCmd(Cmd):
     prompt = "ChatAnalyzer > "
-    intro = """Commands:\n start [url]\n end\n Edit files: 
-            vip friendslist blacklist flags
+    intro = """Commands:\n start [url]\n end\nEdit files:\
+            \n vip friendslist blacklist flags
             """
     PROC = None
     URL = None
