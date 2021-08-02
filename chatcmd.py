@@ -3,13 +3,15 @@ from cmd import Cmd
 import subprocess
 import psutil
 import atexit
-from chatsettings import Settings
+from chatsettings import Settings, read_json, update_json
 
-ADD_SERVICES = {
-    "vip": ""
-}
 EDIT_SERVICES = {
-    "vip": ""
+    "vip": Settings.edit_vip_list,
+    "friends": Settings.edit_friends_list,
+    "flags": Settings.edit_flags,
+    "blacklist": Settings.edit_blacklist
+}
+INTEGRITY_CHECKS = {
 }
 
 
@@ -19,9 +21,22 @@ def kill_proc_tree(pid:int):
         c.kill()
     pobj.kill()
 
+def check_edit_args(inp) -> list:
+    args = inp.split()
+    # TODO To future me: find better way to handle this
+    if args > 1:
+        # Key to list
+        if args[0] in ["blacklist"] and len(args) == 2:
+            return args
+        elif len(args) == 3:
+            return args
+    return ["invalid"]
+
 class ChatAnalyzerCmd(Cmd):
     prompt = "ChatAnalyzer > "
-    intro = "Commands:\n start [url]\n end"
+    intro = """Commands:\n start [url]\n end\n Edit files: 
+            vip friendslist blacklist flags
+            """
     PROC = None
     URL = None
 
@@ -52,8 +67,21 @@ class ChatAnalyzerCmd(Cmd):
         self.do_restart("")
 
     def do_edit(self, inp):
-        print(inp)
+        args = check_edit_args(inp)
+        func = EDIT_SERVICES.get(args[0], None)
+        data = read_json(args[0]) if func else None
+        # Key to list files
+        if func and inp in ["blacklist"]:
+            key = data.keys()[0]
+            data[key].append(args[1])
+        # Key to value files
+        else:
+            # TODO Need to make integrity check later
+            data[args[1]] = args[2]
         self.do_restart("")
+
+    def do_del(self, inp):
+        pass
 
     do_EOF = do_exit
 

@@ -4,12 +4,13 @@ friendslist.json:
     author_id: author_name
 viplist.json:
     author_id: nickname
+flags.json:
+    flag: bool
 blacklist.json:
     ids: [id, id, id]
 """
 import json
 import errors
-import copy
 from win32com.client import Dispatch
 from chat_downloader import ChatDownloader
 from chat_downloader import errors as c_errors

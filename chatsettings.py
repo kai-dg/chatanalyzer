@@ -2,18 +2,43 @@
 import json
 from os import path, remove
 
+_VIP = "viplist.json"
+_FLAGS = "flags.json"
+_BLACKLIST = "blacklist.json"
+_FRIENDSLIST= "friendslist.json"
 # GLOBALS
 g = {
     # filename: variable name
     "JSON_FILES": {
-        "viplist.json": "vip_list",
-        "flags.json": "flags",
-        "friendslist.json": "friends_list",
-        "blacklist.json": "blacklist",
+        _VIP: "vip_list",
+        _FLAGS: "flags",
+        _FRIENDSLIST: "friends_list",
+        _BLACKLIST: "blacklist",
+    },
+    "READ_NAMES": {
+        "vip": _VIP,
+        "flags": _FLAGS,
+        "friendslist": _FRIENDSLIST,
+        "blacklist": _BLACKLIST
     },
     "CHATLOG": ".chatlog.json",
     "DOT_FOLDER": ".settings"
 }
+
+def read_json(name):
+    """Cmd function"""
+    filename = g["READ_NAMES"].get(name, None)
+    if filename:
+        with open(filename, "r") as f:
+            return json.load(f)
+
+def update_json(name, data):
+    """Cmd function"""
+    filename = g["READ_NAMES"].get(name, None)
+    if filename:
+        with open(filename, "w+") as f:
+            return json.dump(data, f)
+    return data
 
 class Settings:
     @staticmethod
@@ -33,8 +58,8 @@ class Settings:
             json.dump(template, f)
 
     @staticmethod
-    def edit_flags(filepath):
-        pass
+    def edit_flags():
+        g["EDIT_FILES"]["flags"]
 
     @staticmethod
     def edit_friends_list():
@@ -42,6 +67,10 @@ class Settings:
 
     @staticmethod
     def edit_vip_list():
+        pass
+
+    @staticmethod
+    def edit_blacklist():
         pass
 
     @staticmethod
