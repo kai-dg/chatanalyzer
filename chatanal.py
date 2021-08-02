@@ -4,6 +4,8 @@ friendslist.json:
     author_id: author_name
 viplist.json:
     author_id: nickname
+blacklist.json:
+    ids: [id, id, id]
 """
 import json
 import errors
@@ -14,9 +16,8 @@ from chat_downloader import errors as c_errors
 from datetime import datetime
 from sys import argv
 from os import path, mkdir
-from chatsettings import AnalSettings
+from chatsettings import Settings, g
 
-DOT_FOLDER = ".settings"
 
 class VipSubService:
     def __init__(self):
@@ -32,11 +33,16 @@ class VipSubService:
         vip_author = self.vip_list.get(author_id, None)
         return vip_author if vip_author else author
 
+
 class TtsService(VipSubService):
     speak = Dispatch("SAPI.SpVoice").Speak
 
     def __init__(self):
+        self._set_blacklist()
         VipSubService.__init__(self)
+
+    def _set_blacklist(self):
+        self.blacklist = set(self.blacklist["ids"])
 
     def tts_message(self, servs:dict, message):
         """TTS Service function"""
@@ -45,7 +51,15 @@ class TtsService(VipSubService):
         if "flag_onlyfriends" in servs:
             author = servs.get("flag_onlyfriends")(author, author_id)
         mes = message.get("message")
+        if "flag_blacklist" in servs:
+            if self.tts_check_blacklist(author_id):
+                return
         self.speak(f"{author} says {mes}")
+
+    def tts_check_blacklist(self, author_id) -> bool:
+        """VIP Sub Service function"""
+        return author_id in self.blacklist
+
 
 class ChatAnalyzer(TtsService):
     """ChatAnal with added services.
@@ -53,20 +67,15 @@ class ChatAnalyzer(TtsService):
     """
     chat = None
     now = datetime.now().timestamp()
-    _json_files = {
-        "viplist.json": "vip_list",
-        "friendslist.json": "friends_list",
-        "flags.json": "flags"
-    }
-    # FLAGS
-    flags = None
-    # SERVICES
     services = {}
+    # JSON LISTS
     vip_list = None
     friends_list = None
+    blacklist = None
+    flags = None
 
     def __init__(self, url):
-        self._set_json_files()
+        self._set_json_lists()
         self.chat = self._get_chat(url)
         TtsService.__init__(self)
         self._init_services()
@@ -75,15 +84,17 @@ class ChatAnalyzer(TtsService):
         self.services = {
             "flag_tts": {
                 "main": self.tts_message,
-                "flag_onlyfriends": self.vip_check_if_friend
+                "flag_onlyfriends": self.vip_check_if_friend,
+                "flag_blacklist": self.tts_check_blacklist
             },
         }
 
-    def _set_json_files(self):
-        if not path.exists(DOT_FOLDER):
-            mkdir(DOT_FOLDER)
-        for jfile, jattr in self._json_files.items():
-            jpath = path.join(DOT_FOLDER, jfile)
+    def _set_json_lists(self):
+        """Imports all settings from json files"""
+        if not path.exists(g["DOT_FOLDER"]):
+            mkdir(g["DOT_FOLDER"])
+        for jfile, jattr in g["json_files"].items():
+            jpath = path.join(g["DOT_FOLDER"], jfile)
             if path.exists(jpath):
                 with open(jpath, "r") as f:
                     setattr(self, jattr, json.load(f))
@@ -92,11 +103,14 @@ class ChatAnalyzer(TtsService):
                     f.write("{}")
                     setattr(self, jattr, {})
                 if jattr == "flags":
-                    AnalSettings.add_flags_template(jpath)
+                    Settings.add_flags_template(jpath)
+                if jattr == "blacklist":
+                    Settings.add_blacklist_template(jpath)
 
     def _get_chat(self, url):
         try:
-            chat = ChatDownloader().get_chat(url)
+            Settings.reset_chatlog()
+            chat = ChatDownloader().get_chat(url=url, output=g["CHATLOG"])
             return chat
         except c_errors.SiteNotSupported:
             raise errors.ChatAnalyzerUrlError()
@@ -124,6 +138,7 @@ class ChatAnalyzer(TtsService):
             serv["main"]({}, message)
 
     def run(self):
+        """Chat analyzer entry point"""
         servs = self._get_services()
         for message in self.chat:
             if message.get("timestamp")/1000000 > self.now:
