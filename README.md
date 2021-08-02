@@ -24,12 +24,12 @@ Livestream chat analyzer. Windows support only.
 
 1. TTS OnlyFriends
 
-  - Have TTS when specific user ids show up in chat
+    - Have TTS when specific user ids show up in chat
 
 2. TTS Blacklist
 
-  - Have TTS blacklist specific user ids
+    - Have TTS blacklist specific user ids
 
 2. (TTS) VIP List
 
-  - Rename selected users to change their name when TTS says their chat
+    - Rename selected users to change their name when TTS says their chat
