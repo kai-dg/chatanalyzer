@@ -35,3 +35,16 @@ Livestream chat analyzer. Windows support only.
 2. (TTS) VIP List
 
     - Rename selected users to change their name when TTS says their chat
+
+---
+
+## Examples
+
+```
+ChatAnalyzer > start https://youtube.com/mylivestream
+ChatAnalyzer > end
+ChatAnalyzer > edit flags flag_tts on
+ChatAnalyzer > edit vip 123abcXYZ rick astley
+ChatAnalyzer > edit friendslist 123abcXYZ rick astley
+ChatAnalyzer > edit blacklist 123abcXYZ
+```
