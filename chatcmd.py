@@ -27,14 +27,18 @@ def check_edit_args(inp) -> list:
         # Key to list
         if args[0] in ["blacklist"] and len(args) == 2:
             return args
-        elif len(args) == 3:
+        elif len(args) > 2:
+            value = " ".join(args[2:])
+            args = args[:2]
+            args.append(value)
             return args
     return ["invalid"]
 
 class ChatAnalyzerCmd(Cmd):
     prompt = "ChatAnalyzer > "
     intro = """Commands:\n start [url]\n end\nEdit files:\
-            \n vip friendslist blacklist flags
+            \n vip friendslist blacklist flags\
+            \nTurn on flags:\n flag_tts flag_vip flag_blacklist flag_onlyfriends
             """
     PROC = None
     URL = None
