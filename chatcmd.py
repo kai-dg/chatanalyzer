@@ -5,7 +5,6 @@ import psutil
 import atexit
 from chatsettings import Settings, g, read_json, update_json
 from chatanal import ChatAnalyzer
-Settings.format_json_filepaths()
 
 EDIT_SERVICES = {
     "vip": Settings.edit_vip_list,
@@ -41,7 +40,6 @@ class ChatAnalyzerCmd(Cmd):
             """
     PROC = None
     URL = None
-    INIT_ANAL = ChatAnalyzer()
 
     def do_exit(self, inp):
         print("Exiting")
@@ -74,8 +72,8 @@ class ChatAnalyzerCmd(Cmd):
         func = EDIT_SERVICES.get(args[0], None)
         data = read_json(args[0]) if func else None
         # Key to list files
-        if func and inp in ["blacklist"]:
-            key = data.keys()[0]
+        if args[0] in ["blacklist"]:
+            key = list(data.keys())[0]
             data[key].append(args[1])
         # Key to value files
         else:
@@ -94,5 +92,6 @@ class ChatAnalyzerCmd(Cmd):
     do_EOF = do_exit
 
 if __name__ == "__main__":
-    atexit.register(Settings.reset_chatlog)
+    c = ChatAnalyzerCmd()
+    atexit.register(c.do_exit, "")
     ChatAnalyzerCmd().cmdloop()

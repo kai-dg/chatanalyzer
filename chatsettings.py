@@ -2,6 +2,7 @@
 import json
 from os import path, remove
 
+_DOT_FOLDER = ".settings"
 _VIP = "viplist.json"
 _FLAGS = "flags.json"
 _BLACKLIST = "blacklist.json"
@@ -16,13 +17,12 @@ g = {
         _BLACKLIST: "blacklist",
     },
     "READ_NAMES": {
-        "vip": _VIP,
-        "flags": _FLAGS,
-        "friendslist": _FRIENDSLIST,
-        "blacklist": _BLACKLIST
+        "vip": path.join(_DOT_FOLDER, _VIP),
+        "flags": path.join(_DOT_FOLDER, _FLAGS),
+        "friendslist": path.join(_DOT_FOLDER, _FRIENDSLIST),
+        "blacklist": path.join(_DOT_FOLDER, _BLACKLIST)
     },
-    "CHATLOG": ".chatlog.json",
-    "DOT_FOLDER": ".settings"
+    "DOT_FOLDER": _DOT_FOLDER
 }
 
 def read_json(name):
@@ -36,11 +36,6 @@ def update_json(name, data):
         return json.dump(data, f)
 
 class Settings:
-    @staticmethod
-    def format_json_filepaths():
-        for k, v in g["READ_NAMES"].items():
-            g["READ_NAMES"][k] = path.join(g["DOT_FOLDER"], v)
-
     @staticmethod
     def add_flags_template(filepath):
         template = {
@@ -72,8 +67,3 @@ class Settings:
     @staticmethod
     def edit_blacklist():
         pass
-
-    @staticmethod
-    def reset_chatlog():
-        if path.exists(g["CHATLOG"]):
-            remove(g["CHATLOG"])

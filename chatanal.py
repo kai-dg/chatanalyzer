@@ -18,7 +18,6 @@ from datetime import datetime
 from sys import argv
 from os import path, mkdir
 from chatsettings import Settings, g
-Settings.format_json_filepaths()
 
 
 class VipSubService:
@@ -114,9 +113,9 @@ class ChatAnalyzer(TtsService):
 
     def get_chat(self, url):
         try:
-            Settings.reset_chatlog()
-            chat = ChatDownloader().get_chat(url=url, output=g["CHATLOG"])
+            chat = ChatDownloader().get_chat(url=url)
             self.chat = chat
+            print(f"Chat Analyzer is now watching on {url}")
             return chat
         except c_errors.SiteNotSupported:
             raise errors.ChatAnalyzerUrlError()
