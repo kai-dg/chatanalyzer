@@ -18,6 +18,7 @@ from datetime import datetime
 from sys import argv
 from os import path, mkdir
 from chatsettings import Settings, g
+Settings.format_json_filepaths()
 
 
 class VipSubService:
@@ -43,7 +44,8 @@ class TtsService(VipSubService):
         VipSubService.__init__(self)
 
     def _set_blacklist(self):
-        self.blacklist = set(self.blacklist["ids"])
+        ids = self.blacklist.get("ids", [])
+        self.blacklist = set(ids)
 
     def tts_message(self, servs:dict, message):
         """TTS Service function"""
@@ -75,9 +77,11 @@ class ChatAnalyzer(TtsService):
     blacklist = None
     flags = None
 
-    def __init__(self, url):
+    def __init__(self):
         self._set_json_lists()
-        self.chat = self._get_chat(url)
+        self.chat = None
+        # TODO need to reconfigure bottom level service initialization
+        # maybe add another class to inherit to do it
         TtsService.__init__(self)
         self._init_services()
 
@@ -94,7 +98,7 @@ class ChatAnalyzer(TtsService):
         """Imports all settings from json files"""
         if not path.exists(g["DOT_FOLDER"]):
             mkdir(g["DOT_FOLDER"])
-        for jfile, jattr in g["json_files"].items():
+        for jfile, jattr in g["JSON_FILES"].items():
             jpath = path.join(g["DOT_FOLDER"], jfile)
             if path.exists(jpath):
                 with open(jpath, "r") as f:
@@ -108,10 +112,11 @@ class ChatAnalyzer(TtsService):
                 if jattr == "blacklist":
                     Settings.add_blacklist_template(jpath)
 
-    def _get_chat(self, url):
+    def get_chat(self, url):
         try:
             Settings.reset_chatlog()
             chat = ChatDownloader().get_chat(url=url, output=g["CHATLOG"])
+            self.chat = chat
             return chat
         except c_errors.SiteNotSupported:
             raise errors.ChatAnalyzerUrlError()
@@ -149,5 +154,6 @@ class ChatAnalyzer(TtsService):
 
 if __name__ == "__main__":
     url = argv[1]
-    chat = ChatAnalyzer(url)
-    chat.run()
+    anal = ChatAnalyzer()
+    anal.get_chat(url)
+    anal.run()

@@ -27,20 +27,20 @@ g = {
 
 def read_json(name):
     """Cmd function"""
-    filename = g["READ_NAMES"].get(name, None)
-    if filename:
-        with open(filename, "r") as f:
-            return json.load(f)
+    with open(g["READ_NAMES"][name], "r") as f:
+        return json.load(f)
 
 def update_json(name, data):
     """Cmd function"""
-    filename = g["READ_NAMES"].get(name, None)
-    if filename:
-        with open(filename, "w+") as f:
-            return json.dump(data, f)
-    return data
+    with open(g["READ_NAMES"][name], "w+") as f:
+        return json.dump(data, f)
 
 class Settings:
+    @staticmethod
+    def format_json_filepaths():
+        for k, v in g["READ_NAMES"].items():
+            g["READ_NAMES"][k] = path.join(g["DOT_FOLDER"], v)
+
     @staticmethod
     def add_flags_template(filepath):
         template = {
@@ -59,7 +59,7 @@ class Settings:
 
     @staticmethod
     def edit_flags():
-        g["EDIT_FILES"]["flags"]
+        a = g["EDIT_FILES"]["flags"]
 
     @staticmethod
     def edit_friends_list():

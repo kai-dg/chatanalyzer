@@ -3,7 +3,9 @@ from cmd import Cmd
 import subprocess
 import psutil
 import atexit
-from chatsettings import Settings, read_json, update_json
+from chatsettings import Settings, g, read_json, update_json
+from chatanal import ChatAnalyzer
+Settings.format_json_filepaths()
 
 EDIT_SERVICES = {
     "vip": Settings.edit_vip_list,
@@ -24,7 +26,7 @@ def kill_proc_tree(pid:int):
 def check_edit_args(inp) -> list:
     args = inp.split()
     # TODO To future me: find better way to handle this
-    if args > 1:
+    if len(args) > 1:
         # Key to list
         if args[0] in ["blacklist"] and len(args) == 2:
             return args
@@ -39,6 +41,7 @@ class ChatAnalyzerCmd(Cmd):
             """
     PROC = None
     URL = None
+    INIT_ANAL = ChatAnalyzer()
 
     def do_exit(self, inp):
         print("Exiting")
@@ -78,7 +81,12 @@ class ChatAnalyzerCmd(Cmd):
         else:
             # TODO Need to make integrity check later
             data[args[1]] = args[2]
-        self.do_restart("")
+        update_json(args[0], data)
+        if self.PROC:
+            self.do_restart("")
+
+    def do_list(self, inp):
+        pass
 
     def do_del(self, inp):
         pass
