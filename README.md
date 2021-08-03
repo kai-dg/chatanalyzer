@@ -16,7 +16,9 @@ Livestream chat analyzer. Windows support only.
 
 `ChatAnalyzer > end`
 
-`ChatAnalyzer > edit [name]`
+`ChatAnalyzer > edit flags [flags_*] [on/off]`
+
+`ChatAnalyzer > edit [name] [key/id] [value]*`
 
 ---
 
