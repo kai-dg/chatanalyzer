@@ -12,9 +12,9 @@ _FRIENDSLIST= "friendslist.json"
 g = {
     # filename: variable name
     "JSON_FILES": {
-        _VIP: "vip_list",
+        _VIP: "viplist",
         _FLAGS: "flags",
-        _FRIENDSLIST: "friends_list",
+        _FRIENDSLIST: "friendslist",
         _BLACKLIST: "blacklist",
     },
     "READ_NAMES": {
@@ -48,7 +48,8 @@ class Settings:
         template = {
             "flag_tts": True,
             "flag_blacklist": True,
-            "flag_onlyfriends": False
+            "flag_onlyfriends": False,
+            "flag_vip": True
         }
         with open(filepath, "w+") as f:
             json.dump(template, f)

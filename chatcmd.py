@@ -71,6 +71,10 @@ class ChatAnalyzerCmd(Cmd):
         # Key to value files
         else:
             # TODO Need to make integrity check later
+            if args[2] in ["true", "on"]:
+                args[2] = True
+            if args[2] in ["false", "off"]:
+                args[2] = False
             data[args[1]] = args[2]
         update_json(args[0], data)
         if self.PROC:

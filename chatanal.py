@@ -21,21 +21,23 @@ from chatsettings import Settings, g
 
 
 class VipSubService:
+    """Tts add-on, alias friends into different names during tts."""
     def __init__(self):
-        self._set_vip_list()
+        self._set_vip_to_friends_list()
         
-    def _set_vip_list(self):
-        for a_id, nickname in self.vip_list.items():
-            if a_id in self.friends_list:
-                self.friends_list[a_id] = nickname
+    def _set_vip_to_friends_list(self):
+        for a_id, nickname in self.viplist.items():
+            if a_id in self.friendslist:
+                self.friendslist[a_id] = nickname
 
-    def vip_check_if_friend(self, author, author_id) -> str:
+    def vip_check(self, author, author_id) -> str:
         """VIP Sub Service function"""
-        vip_author = self.vip_list.get(author_id, None)
+        vip_author = self.viplist.get(author_id, None)
         return vip_author if vip_author else author
 
 
 class TtsService(VipSubService):
+    """Text to speech service, will format message into speech."""
     speak = Dispatch("SAPI.SpVoice").Speak
 
     def __init__(self):
@@ -50,17 +52,25 @@ class TtsService(VipSubService):
         """TTS Service function"""
         author_id = message.get("author").get("id")
         author = message.get("author").get("name")
-        if "flag_onlyfriends" in servs:
-            author = servs.get("flag_onlyfriends")(author, author_id)
-        mes = message.get("message")
         if "flag_blacklist" in servs:
             if self.tts_check_blacklist(author_id):
                 return
+
+        mes = message.get("message")
+        if "flag_onlyfriends" in servs:
+            author = servs.get("flag_onlyfriends")(author, author_id)
+            self.speak(f"{author} says {mes}")
+            return
+        if "flag_vip" in servs:
+            author = servs.get("flag_vip")(author, author_id)
         self.speak(f"{author} says {mes}")
 
     def tts_check_blacklist(self, author_id) -> bool:
         """VIP Sub Service function"""
         return author_id in self.blacklist
+
+    def tts_check_onlyfriends(self, author_id) -> bool:
+        return author_id in self.friendslist
 
 
 class ChatAnalyzer(TtsService):
@@ -71,8 +81,8 @@ class ChatAnalyzer(TtsService):
     now = datetime.now().timestamp()
     services = {}
     # JSON LISTS
-    vip_list = None
-    friends_list = None
+    viplist = None
+    friendslist = None
     blacklist = None
     flags = None
 
@@ -88,7 +98,8 @@ class ChatAnalyzer(TtsService):
         self.services = {
             "flag_tts": {
                 "main": self.tts_message,
-                "flag_onlyfriends": self.vip_check_if_friend,
+                "flag_onlyfriends": self.vip_check,
+                "flag_vip": self.vip_check,
                 "flag_blacklist": self.tts_check_blacklist
             },
         }
