@@ -5,13 +5,6 @@ import psutil
 import atexit
 from chatsettings import Settings, g, read_json, update_json
 from chatanal import ChatAnalyzer
-
-EDIT_SERVICES = {
-    "vip": Settings.edit_vip_list,
-    "friends": Settings.edit_friends_list,
-    "flags": Settings.edit_flags,
-    "blacklist": Settings.edit_blacklist
-}
 INTEGRITY_CHECKS = {
 }
 
@@ -23,6 +16,11 @@ def kill_proc_tree(pid:int):
     pobj.kill()
 
 def check_edit_args(inp) -> list:
+    """Return:
+    idx 0: file name
+    idx 1: key or list item
+    idx 2: value
+    """
     args = inp.split()
     # TODO To future me: find better way to handle this
     if len(args) > 1:
@@ -63,14 +61,9 @@ class ChatAnalyzerCmd(Cmd):
         kill_proc_tree(self.PROC.pid)
         self.PROC = None
 
-    def do_add(self, inp):
-        print(inp)
-        self.do_restart("")
-
     def do_edit(self, inp):
         args = check_edit_args(inp)
-        func = EDIT_SERVICES.get(args[0], None)
-        data = read_json(args[0]) if func else None
+        data = read_json(args[0])
         # Key to list files
         if args[0] in ["blacklist"]:
             key = list(data.keys())[0]
@@ -83,10 +76,20 @@ class ChatAnalyzerCmd(Cmd):
         if self.PROC:
             self.do_restart("")
 
-    def do_list(self, inp):
-        pass
-
     def do_del(self, inp):
+        """del [filename] [id]"""
+        args = check_edit_args(inp)
+        data = read_json(args[0])
+        if args[0] in ["blacklist"]:
+            key = list(data.keys())[0]
+            data[key].remove(args[1])
+        else:
+            del data[args[1]]
+        update_json(args[0], data)
+        if self.PROC:
+            self.do_restart("")
+
+    def do_list(self, inp):
         pass
 
     do_EOF = do_exit

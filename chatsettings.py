@@ -1,5 +1,6 @@
 #!/ussr/bin/env python3
 import json
+import errors
 from os import path, remove
 
 _DOT_FOLDER = ".settings"
@@ -27,13 +28,19 @@ g = {
 
 def read_json(name):
     """Cmd function"""
-    with open(g["READ_NAMES"][name], "r") as f:
-        return json.load(f)
+    try:
+        with open(g["READ_NAMES"][name], "r") as f:
+            return json.load(f)
+    except FileNotFoundError:
+        raise errors.MissingSettingFileError(g["READ_NAMES"][name])
 
 def update_json(name, data):
     """Cmd function"""
-    with open(g["READ_NAMES"][name], "w+") as f:
-        return json.dump(data, f)
+    try:
+        with open(g["READ_NAMES"][name], "w+") as f:
+            return json.dump(data, f)
+    except FileNotFoundError:
+        raise errors.MissingSettingFileError(g["READ_NAMES"][name])
 
 class Settings:
     @staticmethod
